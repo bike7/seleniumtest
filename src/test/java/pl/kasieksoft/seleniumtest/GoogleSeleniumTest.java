@@ -1,6 +1,9 @@
 package pl.kasieksoft.seleniumtest;
 
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
@@ -34,21 +37,21 @@ class GoogleSeleniumTest {
     @Test
     void searchBarVisible() {
         driver.get("http://google.com");
-        driver.findElement(By.name("q"));
+        WebDriverWait wait = new WebDriverWait(driver, 5);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.name("q")));
     }
 
     @DisplayName("Search results appear after typing in search query and clicking on search button")
     @Test
-    @Disabled("Fix the non visible button")
     void searchResultsAppearAfterClickingSearch() {
         String searchQuery = "Selenium HQ";
 
         driver.get("http://google.com");
         WebElement queryInput = driver.findElement(By.name("q"));
         WebElement searchButton = driver.findElement(By.name("btnK"));
-        WebElement main = driver.findElement(By.id("main"));
+
         queryInput.sendKeys(searchQuery);
-        main.click();
+        queryInput.sendKeys(Keys.ESCAPE);
         searchButton.click();
 
         assertTrue(driver.getTitle().contains(searchQuery));
@@ -70,23 +73,28 @@ class GoogleSeleniumTest {
     @DisplayName("Youtube finds exact video specified in search query and plays it")
     @Test
     void youtubeFindsVideo() {
+        String url = "http://youtube.com";
         String searchQuery = "Zalipie - najpiękniejsza polska wieś";
+        String queryFirstWord = searchQuery.split(" ")[0];
+        String queryInputId = "search";
+        String playerElementId = "player";
+        String videoId = "s7qDbhEu28Y";
 
-        driver.get("http://youtube.com");
-        WebElement queryInput = driver.findElement(By.id("search"));
+        driver.get(url);
+        WebElement queryInput = driver.findElement(By.id(queryInputId));
         queryInput.sendKeys(searchQuery);
         queryInput.sendKeys(Keys.RETURN);
 
         WebDriverWait wait = new WebDriverWait(driver, 5);
         wait.until(ExpectedConditions.titleContains(searchQuery));
 
-        assertTrue(driver.getCurrentUrl().contains("Zalipie"));
+        assertTrue(driver.getCurrentUrl().contains(queryFirstWord));
 
-        WebElement firstLink = driver.findElement(By.xpath("(//div[@id='content']//a[contains(.,'Zalipie')]) [1]"));
+        WebElement firstLink = driver.findElement(By.xpath("(//div[@id='content']//a[contains(.,'" + queryFirstWord + "')]) [1]"));
         firstLink.click();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("player")));
-        assertTrue(driver.getCurrentUrl().contains("s7qDbhEu28Y"));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(playerElementId)));
+        assertTrue(driver.getCurrentUrl().contains(videoId));
     }
 
 
